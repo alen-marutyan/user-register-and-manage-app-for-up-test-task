@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # MongoDB Service
+  mongo:
+    image: mongo:latest
+    container_name: mongo-db
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+
+  # Node.js Application Service
+  server:
+    build: .
+    container_name: node-server
+    ports:
+      - "${PORT}:${PORT}"
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - DB_URI=${DB_URI}
+      - PORT=${PORT}
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+    volumes:
+      - .:/app
+    command: ["npm", "start"]
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
